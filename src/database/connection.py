@@ -2,8 +2,7 @@ from src.config.cfg_parser import get_config
 import psycopg2
 
 def connect_to_db():
-    config = get_config('C:\\Users\\mmm\\Desktop\\simple-search-engine\\config.ini')
-    print(config)
+    config = get_config('config.ini')
     db_settigs = config[config['database']['main']]
     connection = psycopg2.connect(host=db_settigs['host'],
                                   database=db_settigs['database'],

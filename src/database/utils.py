@@ -11,7 +11,6 @@ def parse_to_db(filepath):
     with open(filepath,'r', encoding='UTF8') as csvfile, connection.cursor() as cursor:
         csv_reader = csv.reader(csvfile, delimiter=',')
         
-
         for row in csv_reader:
             text = row[0]
             try:
@@ -28,13 +27,10 @@ def parse_to_db(filepath):
 
             cursor.execute("INSERT INTO posts (rubrics, text, created_date) VALUES (ARRAY{2},'{0}','{1}')".format(text.replace("'","''"), created_date, rubrics))
 
-            print(text)
-            print(created_date)
-            print(rubrics)
     connection.commit()
 
     cursor.close()
     connection.close()
     
 if __name__ == "__main__":
-    parse_to_db("C:\\Users\\mmm\\Desktop\\posts.csv")
+    parse_to_db("database\\data\\posts.csv")
