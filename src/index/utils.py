@@ -5,9 +5,11 @@ from src.config.cfg_parser import get_config
 
 
 def try_create_index(es, index_name):
+    config = get_config('config.ini')
+    es_cfg = config['elasticsearch']
 
     mapping = {
-        "mappings": {
+        # "mappings": {
             "properties": {
                 "id": {
                     "type": "integer"
@@ -16,11 +18,16 @@ def try_create_index(es, index_name):
                     "type": "text"
                 }
             }
-        }
+        # }
     }
+
+    # index_exists = es.indices.exists(index=index_name)
+    # if not index_exists:
     try:
-        es.indices.create(name=index_name, body=mapping)
+        es.indices.create(index=index_name, mappings=mapping)
     except elasticsearch.exceptions.RequestError as ex:
+    # else:
+        # return False
         if ex.error == 'resource_already_exists_exception':
             return False
         else:
@@ -43,7 +50,22 @@ def index_database():
         old_index = index_cfg['name-1']
         try_create_index(es, new_index)#TODO :: check for creation error
 
-    # code
+    db = connect_to_db()
+    cursor = db.cursor()
+
+    cursor.execute('SELECT id FROM posts')
+    posts_ids = cursor.fetchall()
+    for id in posts_ids:
+        cursor.execute('SELECT id, text FROM posts WHERE id = {}'.format(id[0]))
+        data = cursor.fetchone()
+        data = {
+            "id": "{}".format(int(data[0])),
+            "text": "{}".format(data[1])
+        }
+        es.index(index = new_index, body = data)
+
+    cursor.close()
+    db.close()
 
     es.indices.update_aliases({
         "actions": [
