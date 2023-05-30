@@ -74,7 +74,7 @@ class API:
             """
             ---
             delete:
-                summary: Удалние записи
+                summary: Удаление записи
                 description: Удаляет документ из БД и индекса по полю  `id`
                 parameters:
                 - in:path
