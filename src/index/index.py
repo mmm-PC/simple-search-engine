@@ -1,6 +1,7 @@
 import elasticsearch
 from src.config.cfg_parser import get_config
 from elasticsearch import Elasticsearch
+from datetime import datetime
 
 
 class Index:
@@ -15,6 +16,10 @@ class Index:
             "properties": {
                 "id": {
                     "type": "integer"
+                },
+                "created_date": {
+                    "type": "date",
+                    "format": "yyyy-MM-dd HH:mm:ss"
                 },
                 "text": {
                     "type": "text",
@@ -55,11 +60,12 @@ class Index:
             posts_ids = cursor.fetchall()
             for id in posts_ids:
                 cursor.execute(
-                    'SELECT id, text FROM posts WHERE id = {}'.format(id[0]))
+                    'SELECT id, created_date, text FROM posts WHERE id = {}'.format(id[0]))
                 data = cursor.fetchone()
                 data = {
                     "id": "{}".format(int(data[0])),
-                    "text": "{}".format(data[1])
+                    "created_date": "{}".format(data[1]),
+                    "text": "{}".format(data[2])
                 }
                 self.es.index(index=new_index, body=data)
 
@@ -80,11 +86,11 @@ class Index:
 
         return True
 
-    def search(self, query, size=20, source=True, source_excludes=[], source_includes=[]):
+    def search(self, query, size=20, source=True, source_excludes=[], source_includes=[], sort=[]):
         index_cfg = get_config('config.ini')['index']
 
         response = self.es.search(index=index_cfg['alias'], query={"match": {
-                                  "text": query}}, size=size, source=source, source_excludes=source_excludes, source_includes=source_includes)
+                                  "text": query}}, size=size, source=source, source_excludes=source_excludes, source_includes=source_includes, sort=sort)
         result = []
         for item in response['hits']['hits']:
             result.append(item['_source'])
@@ -93,8 +99,6 @@ class Index:
 
     def delete_by_id(self, id):
         index_cfg = get_config('config.ini')['index']
-
-        body = {'query': {'term': {'name': 'Jacobian'}}}
 
         self.es.delete_by_query(index=index_cfg['alias'], body={
                                 'query': {'term': {'id': id}}})
