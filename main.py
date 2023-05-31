@@ -16,8 +16,8 @@ def init():
     return api
 
 
-def populate_db(api: API):
-    api.database.parse_to_db("database\\data\\posts.csv")
+def populate_db(api: API, filepath):
+    api.database.parse_to_db(filepath)
 
 
 def make_index(api: API):
@@ -34,8 +34,8 @@ def main(api: API):
 
 
 if __name__ == "__main__":
-    api = init()
-    # populate_db(api)
-    make_index(api)
+    api = init()                
+    populate_db(api, "database\\data\\posts.csv")           # Заполнение БД
+    make_index(api)                                         # Создание индекса Elasticsearch
 
     main(api)
